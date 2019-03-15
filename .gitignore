@@ -1,0 +1,51 @@
+# input & output files
+input*.txt
+output*.txt
+
+# compiled source
+*.com
+*.class
+*.dll
+*.exe
+*.o
+*.so
+*.out
+
+# Packages
+*.7z
+*.dmg
+*.gz
+*.iso
+*.jar
+*.rar
+*.tar
+*.zip
+
+# Logs and databases
+*.log
+*.sql
+*.sqlite
+
+# OS generated files
+.DS_Store
+.DS_Store?
+.DSStore
+.DSStore?
+._.DS_Store
+**/.DS_Store
+**/._.DS_Store
+.Trashes
+ehthumbs.db
+Thumbs.db
+Desktop.ini
+
+# cache files for sublime text
+*.tmlanguage.cache
+*.tmPreferences.cache
+*.stTheme.cache
+
+# sublime-text user-specific settings
+*.sublime*
+
+# sftp configuration file
+sftp-config.json
