@@ -165,24 +165,24 @@ void charm()
 void printToOutputFile()
 {
 	outFile.setf(ios_base:: fixed, ios_base:: floatfield);
-	for (auto it = itemset.begin(); it != itemset.end(); it++) {
+	for (auto itr = itemset.begin(); itr != itemset.end(); itr++) {
 		for (auto comp = itemset.begin(); comp != itemset.end(); comp++) {
-			if (it == comp)
+			if (itr == comp)
 				continue;
-			double support = calcSupport(it->second, comp->second);
-			double confidence = static_cast<double>(support)/it->second.size() * 100;
+			double support = static_cast<double>(calcSupport(itr->second, comp->second));
+			double confidence = static_cast<double>(support)/itr->second.size() * 100;
 			support = support/totalTxn * 100;
 			if (support < minSupport)
 				continue;
 			outFile << setprecision(2)
-							<< setToString(it->first) << "\t" << setToString(comp->first)<< "\t"
+							<< setToString(itr->first) << "\t" << setToString(comp->first)<< "\t"
 							<< support << "\t" << confidence << "\n";
 		}
 	}
 }
 
 /*
- * return number of same items within two transactions.
+ * return number of transactions that contain [item_set] ∪ [associative_item_set]
  * slight modification of c++ STL set_intersection from <algorithm> header.
  */
 int calcSupport(const set<int>& txn1, const set<int>& txn2)

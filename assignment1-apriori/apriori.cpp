@@ -27,7 +27,7 @@ void generateCandidate(set<set<int> >& candidate, int poolSize);
 void pruning(set<set<int> >& candidate, int poolSize);
 void printToOutputFile();
 bool isFrequent(const set<int>& curItemset);
-int calcSupport(const set<int>& txn1, const set<int>& txn2);
+int calcSupport(const set<int>& fp1, const set<int>& fp2);
 string setToString(const set<int>& tempSet);
 void printItemset();
 
@@ -36,14 +36,7 @@ int main(int argc, char *argv[])
 	parseArgv(argc, argv);
 	parseTransaction();
 	apriori();
-	// printToOutputFile();
-	// int cnt = 0;
-	// for (auto& it : transaction) {
-	// 	if(it.find(0) != it.end() && it.find(1) != it.end()) {
-	// 		cout << setToString(it) << "\n";
-	// 		cnt++;
-	// 	}
-	// }
+	printToOutputFile();
 
 	return 0;
 }
@@ -110,8 +103,7 @@ void apriori()
 	set<set<int> > emptyItemset;
 	itemset.push_back(emptyItemset);/* 0-itemset */
 	itemset.push_back(emptyItemset);/* 1-itemset */
-	/* vector<set<int> > transaction */
-	/* vector<set<set<int> > > itemset */
+
 	for (auto& txn : transaction) {
 		for (auto& item : txn) {
 			set<int> tempSet;
@@ -190,21 +182,34 @@ void pruning(set<set<int> >& candidate, int poolSize)
 
 void printToOutputFile()
 {
-	// outFile.setf(ios_base:: fixed, ios_base:: floatfield);
-	// for (auto it = itemset.begin(); it != itemset.end(); it++) {
-	// 	for (auto comp = itemset.begin(); comp != itemset.end(); comp++) {
-	// 		if (it == comp)
-	// 			continue;
-	// 		double support = calcSupport(it->second, comp->second);
-	// 		double confidence = static_cast<double>(support)/it->second.size() * 100;
-	// 		support = support/totalTxn * 100;
-	// 		if (support < minSupport)
-	// 			continue;
-	// 		outFile << setprecision(2)
-	// 						<< setToString(it->first) << "\t" << setToString(comp->first)<< "\t"
-	// 						<< support << "\t" << confidence << "\n";
-	// 	}
-	// }
+	/* vector<set<int> > transaction */
+	/* vector<set<set<int> > > itemset */
+	outFile.setf(ios_base:: fixed, ios_base:: floatfield);
+
+	/* For the convenience of iteration, all itemsets will be inserted into itemset[0]
+	 * Note that previous items will be removed from itemset[n](n >= 1) to save some memory.
+	 */
+	set<set<int> >& frequentPattern = itemset[0];
+	for (auto curPool = itemset.begin() + 1; curPool != itemset.end(); curPool++) {
+		frequentPattern.insert(curPool->begin(), curPool->end());
+		curPool->clear();
+	}
+	for (auto itr = frequentPattern.begin(); itr != frequentPattern.end(); itr++) {
+		for (auto comp = frequentPattern.begin(); comp != frequentPattern.end(); comp++) {
+			if (itr == comp)
+				continue;
+			double support = static_cast<double>(calcSupport(*itr, *comp));
+			if ((support/totalTxn * 100) < minSupport)
+				continue;
+			set<int> emptySet;
+			double confidence = (static_cast<double>(support)/calcSupport(*itr, emptySet)) * 100;
+			support = support/totalTxn * 100;
+
+			outFile << setprecision(2)
+							<< setToString(*itr) << "\t" << setToString(*comp)<< "\t"
+							<< support << "\t" << confidence << "\n";
+		}
+	}
 }
 
 /*
@@ -233,26 +238,31 @@ bool isFrequent(const set<int>& curItemset)
 }
 
 /*
- * return number of same items within two transactions.
- * slight modification of c++ STL set_intersection from <algorithm> header.
+ * return number of transactions that contain [item_set] ∪ [associative_item_set]
  */
-int calcSupport(const set<int>& txn1, const set<int>& txn2)
+int calcSupport(const set<int>& fp1, const set<int>& fp2)
 {
-	auto first1 = txn1.begin(), first2 = txn2.begin();
-	auto last1 = txn1.end(), last2 = txn2.end();
-	int size = 0;
-	while (first1 != last1 && first2 != last2)
-	{
-		if (*first1 < *first2) {
-			++first1;
-		} else if (*first2 < *first1) {
-			++first2;
-		} else {
-			++size; ++first1; ++first2;
+	/* vector<set<int> > transaction */
+	/* vector<set<set<int> > > itemset */
+	set<int> unionPattern;
+	int cnt = 0;
+	set_union(fp1.begin(), fp1.end(),
+				fp2.begin(), fp2.end(),
+				inserter(unionPattern, unionPattern.begin()));
+	for (auto& txn : transaction) {
+		bool isSubset = true;
+		for (auto& item : unionPattern) {
+			auto itr = txn.find(item);
+			if (itr == txn.end()) {
+				isSubset = false;
+				break;
+			}
 		}
+		if (isSubset)
+			cnt++;
 	}
 
-	return size;
+	return cnt;
 }
 
 /*
@@ -274,15 +284,13 @@ string setToString(const set<int>& tempSet)
  */
 void printItemset()
 {
-	int cnt = 1, setSize = 0;
+	int cnt = 1;
 	for (auto& it : itemset) {
-		cout << "itemset size: " << setSize << endl;
 		for (auto& set : it) {
 			cout.width(4);
 			cout << cnt << " ";
 			cout << setToString(set) << endl;
 			cnt++;
 		}
-		setSize++;
 	}
 }
