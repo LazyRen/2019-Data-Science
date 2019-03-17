@@ -47,10 +47,10 @@ int main(int argc, char *argv[])
 void parseArgv(int argc, char *argv[])
 {
 	if (argc < 4) {
-		minSupport = 5;
-		inpFile.open("input.txt");
-		outFile.open("output.txt");
-		return;
+		// minSupport = 5;
+		// inpFile.open("input.txt");
+		// outFile.open("output.txt");
+		// return;
 
 		cout << "3 arguments are required to proceed" << endl;
 		cout << argv[0] << " [Minimum Support] [Input File Name] [Output File Name]" << endl;
