@@ -23,7 +23,7 @@ map<set<int>, set<int> > itemset;
 void parseArgv(int argc, char *argv[]);
 void parseTransaction();
 void charm();
-void association();
+void printToOutputFile();
 int calcSupport(const set<int>& txn1, const set<int>& txn2);
 string setToString(const set<int>& tmpSet);
 void printItemset();
@@ -33,14 +33,7 @@ int main(int argc, char *argv[])
 	parseArgv(argc, argv);
 	parseTransaction();
 	charm();
-	association();
-	int cnt = 0;
-	for (auto& it : transaction) {
-		if(it.find(0) != it.end() && it.find(1) != it.end()) {
-			cout << setToString(it) << "\n";
-			cnt++;
-		}
-	}
+	printToOutputFile();
 
 	return 0;
 }
@@ -133,14 +126,14 @@ void charm()
 	while(true) {
 		bool inserted = false;
 		set<set<int> > checked;
-		for (auto it = itemset.begin(); next(it) != itemset.end(); it++) {
-			if (it->first.size() != setSize)
+		for (auto itr = itemset.begin(); next(itr) != itemset.end(); itr++) {
+			if (itr->first.size() != setSize)
 				continue;
-			for (auto nextItr = next(it); nextItr != itemset.end(); nextItr++) {
+			for (auto nextItr = next(itr); nextItr != itemset.end(); nextItr++) {
 				if (nextItr->first.size() != setSize)
 					continue;
 				set<int> newItemset;
-				set_union(it->first.begin(), it->first.end(),
+				set_union(itr->first.begin(), itr->first.end(),
 							nextItr->first.begin(), nextItr->first.end(),
 							inserter(newItemset, newItemset.begin()));
 				if (newItemset.size() != setSize + 1)
@@ -169,20 +162,18 @@ void charm()
 	printItemset();
 }
 
-void association()
+void printToOutputFile()
 {
 	outFile.setf(ios_base:: fixed, ios_base:: floatfield);
 	for (auto it = itemset.begin(); it != itemset.end(); it++) {
 		for (auto comp = itemset.begin(); comp != itemset.end(); comp++) {
 			if (it == comp)
 				continue;
-			double support;
-			double confidence;
-			support = calcSupport(it->second, comp->second);
-			confidence = static_cast<double>(support)/it->second.size() * 100;
+			double support = calcSupport(it->second, comp->second);
+			double confidence = static_cast<double>(support)/it->second.size() * 100;
 			support = support/totalTxn * 100;
-			// if (support < minSupport)
-			// 	continue;
+			if (support < minSupport)
+				continue;
 			outFile << setprecision(2)
 							<< setToString(it->first) << "\t" << setToString(comp->first)<< "\t"
 							<< support << "\t" << confidence << "\n";
@@ -199,7 +190,7 @@ int calcSupport(const set<int>& txn1, const set<int>& txn2)
 	auto first1 = txn1.begin(), first2 = txn2.begin();
 	auto last1 = txn1.end(), last2 = txn2.end();
 	int size = 0;
-	while (first1 != last1 || first2 != last2)
+	while (first1 != last1 && first2 != last2)
 	{
 		if (*first1 < *first2) {
 			++first1;
@@ -227,6 +218,9 @@ string setToString(const set<int>& tmpSet)
 	return ret;
 }
 
+/*
+ * helper function that prints all frequent patterns(itemsets) to the terminal.
+ */
 void printItemset()
 {
 	int cnt = 1;
