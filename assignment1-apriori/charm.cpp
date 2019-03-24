@@ -169,6 +169,10 @@ void printToOutputFile()
 		for (auto comp = itemset.begin(); comp != itemset.end(); comp++) {
 			if (itr == comp)
 				continue;
+			if (includes(itr->first.begin(), itr->first.end(), comp->first.begin(), comp->first.end()))
+				continue;
+			if (includes(comp->first.begin(), comp->first.end(), itr->first.begin(), itr->first.end()))
+				continue;
 			double support = static_cast<double>(calcSupport(itr->second, comp->second));
 			double confidence = static_cast<double>(support)/itr->second.size() * 100;
 			support = support/totalTxn * 100;

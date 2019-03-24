@@ -198,6 +198,10 @@ void printToOutputFile()
 		for (auto comp = frequentPattern.begin(); comp != frequentPattern.end(); comp++) {
 			if (itr == comp)
 				continue;
+			if (includes(itr->begin(), itr->end(), comp->begin(), comp->end()))
+				continue;
+			if (includes(comp->begin(), comp->end(), itr->begin(), itr->end()))
+				continue;
 			double support = static_cast<double>(calcSupport(*itr, *comp));
 			if ((support/totalTxn * 100) < minSupport)
 				continue;
@@ -260,6 +264,8 @@ int calcSupport(const set<int>& fp1, const set<int>& fp2)
 		}
 		if (isSubset)
 			cnt++;
+		// if (includes(txn.begin(), txn.end(), unionPattern.begin(), unionPattern.end()))
+		// 	cnt++;
 	}
 
 	return cnt;
