@@ -161,7 +161,7 @@ void charm()
 			break;
 		setSize += 1;
 	}
-	printItemset();
+	// printItemset();
 }
 
 void printToOutputFile()
