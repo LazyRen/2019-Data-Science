@@ -1,6 +1,7 @@
 # input & output files
 input*.txt
 output*.txt
+test*.txt
 
 # compiled source
 *.com
