@@ -27,6 +27,8 @@ void generateCandidate(set<set<int> >& candidate, int poolSize);
 void pruning(set<set<int> >& candidate, int poolSize);
 void printToOutputFile();
 bool isFrequent(const set<int>& curItemset);
+template<class Set1, class Set2>
+bool isDisjoint(const Set1 &set1, const Set2 &set2);
 int calcSupport(const set<int>& fp1, const set<int>& fp2);
 string setToString(const set<int>& tempSet);
 void printItemset();
@@ -196,11 +198,7 @@ void printToOutputFile()
 	}
 	for (auto itr = frequentPattern.begin(); itr != frequentPattern.end(); itr++) {
 		for (auto comp = frequentPattern.begin(); comp != frequentPattern.end(); comp++) {
-			if (itr == comp)
-				continue;
-			if (includes(itr->begin(), itr->end(), comp->begin(), comp->end()))
-				continue;
-			if (includes(comp->begin(), comp->end(), itr->begin(), itr->end()))
+			if (!isDisjoint(*itr, *comp))
 				continue;
 			double support = static_cast<double>(calcSupport(*itr, *comp));
 			if ((support/totalTxn * 100) < minSupport)
@@ -269,6 +267,34 @@ int calcSupport(const set<int>& fp1, const set<int>& fp2)
 	}
 
 	return cnt;
+}
+
+/*
+ * Helper function to check if intersection of two sets is empty
+ * https://stackoverflow.com/questions/1964150/c-test-if-2-sets-are-disjoint
+ */
+template<class Set1, class Set2>
+bool isDisjoint(const Set1 &set1, const Set2 &set2)
+{
+		if(set1.empty() || set2.empty()) return true;
+
+		typename Set1::const_iterator
+				it1 = set1.begin(),
+				it1End = set1.end();
+		typename Set2::const_iterator
+				it2 = set2.begin(),
+				it2End = set2.end();
+
+		if(*it1 > *set2.rbegin() || *it2 > *set1.rbegin()) return true;
+
+		while(it1 != it1End && it2 != it2End)
+		{
+				if(*it1 == *it2) return false;
+				if(*it1 < *it2) { it1++; }
+				else { it2++; }
+		}
+
+		return true;
 }
 
 /*
