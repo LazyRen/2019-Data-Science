@@ -513,7 +513,7 @@ def generate(fileName, maxLine, maxItemNum):
 		end = timer()
 		f.close()
 		return end - start
-	txnPool = list(range(-int(maxItemNum/4), int(maxItemNum/4)*3+1))
+	txnPool = list(range(-int(maxItemNum/4), int(maxItemNum/4)*3))
 	print("txnPool : %d" % len(txnPool))
 	for i in range(1, maxLine + 1):
 		txnSize = random.randint(1, maxItemNum/2)
@@ -536,9 +536,9 @@ if __name__ == '__main__':
 		while inp != -1:
 			print("\nChoose Type of Test Case to generate (-1 to exit)\n")
 			print("1. Original Input File")
-			print("2. Small Test  (maxLine: 1000   Item Number: -1000 ~ 1000)")
-			print("3. Medium Test (maxLine: 10000  Item Number: -10000 ~ 10000)")
-			print("4. Large Test  (maxLine: 100000 Item Number: -100000 ~ 100000)")
+			print("2. Small Test  (maxLine: 1000   Item Number: -5  ~ 15)")
+			print("3. Medium Test (maxLine: 10000  Item Number: -8  ~ 32)")
+			print("4. Large Test  (maxLine: 100000 Item Number: -15 ~ 45)")
 			inp = int(input("Input: "))
 			if 0 <= inp and inp <= 4:
 				selected.append(inp)
@@ -550,15 +550,11 @@ if __name__ == '__main__':
 		outFile = "test" + str(i) + ".txt"
 		print("Generating original input file as '%s'" % outFile)
 		if i == 1:
-			num = -1
+			print("Generation took %.2f secs" % generate(outFile, -1, -1))
 		elif i == 2:
-			num = 1000
+			print("Generation took %.2f secs" % generate(outFile, 1000, 20))
 		elif i == 3:
-			num = 10000
+			print("Generation took %.2f secs" % generate(outFile, 10000, 40))
 		elif i == 4:
-			num = 100000
-		if num != -1:
-			print("Generation took %.2f secs" % generate(outFile, num, max([50,int(num/100)])))
-		else:
-			print("Generation took %.2f secs" % generate(outFile, num, num))
+			print("Generation took %.2f secs" % generate(outFile, 100000, 60))
 	print("Terminating Test Generator")

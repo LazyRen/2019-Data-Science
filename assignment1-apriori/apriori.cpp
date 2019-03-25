@@ -101,11 +101,15 @@ void parseTransaction()
  */
 void apriori()
 {
-	// set<set<int> >* curItemset = &itemset[itemsetSize];
 	set<set<int> > emptyItemset;
 	itemset.push_back(emptyItemset);/* 0-itemset */
 	itemset.push_back(emptyItemset);/* 1-itemset */
 
+	/*
+	 * put all items of length 1.
+	 * Don't mind of duplication.
+	 * STL set does not allow dupicate item inserted.
+	 */
 	for (auto& txn : transaction) {
 		for (auto& item : txn) {
 			set<int> tempSet;
@@ -113,7 +117,7 @@ void apriori()
 			itemset[1].insert(tempSet);
 		}
 	}
-	/* remove all 1-itemsets that has support < minSupport */
+	/* remove all 1-itemset with support < minSupport */
 	for (auto itr = itemset[1].begin(); itr != itemset[1].end(); ) {
 		if (isFrequent(*itr))
 			itr++;
@@ -121,6 +125,7 @@ void apriori()
 			itr = itemset[1].erase(itr);
 	}
 
+	/* keep creates size+1 candidates until there is no more candidate to make */
 	int itemsetSize = 1;
 	while (true) {
 		set<set<int> > candidate;
@@ -142,6 +147,12 @@ void apriori()
 	// printItemset();
 }
 
+/*
+ * generate FP candidates with size = poolSize + 1
+ * All candidates are stored within set<set<int> > candidate.
+ * WARNING: candidates are not FP. It is caller's responsibility to
+ * prune them by calling pruning()
+ */
 void generateCandidate(set<set<int> >& candidate, int poolSize)
 {
 	const set<set<int> >& pool = itemset[poolSize];
@@ -159,6 +170,11 @@ void generateCandidate(set<set<int> >& candidate, int poolSize)
 	}
 }
 
+/*
+ * Remove any itemset that can be pruned.
+ * if subset of itemset is not itemset,
+ * we can safely assume that itemset is also not a FP.
+ */
 void pruning(set<set<int> >& candidate, int poolSize)
 {
 	const set<set<int> >& pool = itemset[poolSize];
@@ -182,10 +198,14 @@ void pruning(set<set<int> >& candidate, int poolSize)
 	}
 }
 
+/*
+ * Generate Association Rules and write it to output file.
+ * After this function is called,
+ * accessing itemset[n] n >= 1 will not be valid since all FP(itemsets)
+ * are moved to itemset[0] and erased from the original place for the memory efficiency & iteration convenience.
+ */
 void printToOutputFile()
 {
-	/* vector<set<int> > transaction */
-	/* vector<set<set<int> > > itemset */
 	outFile.setf(ios_base:: fixed, ios_base:: floatfield);
 
 	/* For the convenience of iteration, all itemsets will be inserted into itemset[0]
@@ -244,26 +264,15 @@ bool isFrequent(const set<int>& curItemset)
  */
 int calcSupport(const set<int>& fp1, const set<int>& fp2)
 {
-	/* vector<set<int> > transaction */
-	/* vector<set<set<int> > > itemset */
 	set<int> unionPattern;
 	int cnt = 0;
 	set_union(fp1.begin(), fp1.end(),
 				fp2.begin(), fp2.end(),
 				inserter(unionPattern, unionPattern.begin()));
 	for (auto& txn : transaction) {
-		bool isSubset = true;
-		for (auto& item : unionPattern) {
-			auto itr = txn.find(item);
-			if (itr == txn.end()) {
-				isSubset = false;
-				break;
-			}
-		}
-		if (isSubset)
+		if (includes(txn.begin(), txn.end(),
+		             unionPattern.begin(), unionPattern.end()))
 			cnt++;
-		// if (includes(txn.begin(), txn.end(), unionPattern.begin(), unionPattern.end()))
-		// 	cnt++;
 	}
 
 	return cnt;
