@@ -5,12 +5,18 @@ all:
 	make apriori
 	make charm
 
-apriori: apriori.cpp
+apriori: apriori.o
+	$(CC) $(CFLAGS) $^ -o $@.exe
+
+apriori.o: apriori.cpp
+	$(CC) $(CFLAGS) -c $<
+
+charm: charm.o
 	$(CC) $(CFLAGS) $< -o $@.exe
 
-charm: charm.cpp
-	$(CC) $(CFLAGS) $< -o $@.exe
+charm.o: charm.cpp
+	$(CC) $(CFLAGS) -c $<
 
 clean:
-	rm -f apriori.exe charm.exe
+	rm -f *.exe *.o
 
