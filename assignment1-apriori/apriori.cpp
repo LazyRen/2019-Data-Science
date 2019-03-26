@@ -19,6 +19,7 @@ ifstream inpFile;
 ofstream outFile;
 vector<set<int> > transaction;
 vector<set<set<int> > > itemset;
+map<set<int>, int> itemsetFrequency;
 
 void parseArgv(int argc, char *argv[]);
 void parseTransaction();
@@ -181,15 +182,17 @@ void pruning(set<set<int> >& candidate, int poolSize)
 
 	for (auto itr = candidate.begin(); itr != candidate.end(); ) {
 		bool isPruned = false;
+		set<int> tempSet(*itr);
 		for (int i = 0; i < itr->size(); i++) {
-			set<int> tempSet(*itr);
 			auto rm = tempSet.begin();
 			advance(rm, i);
+			auto tmp = *rm;
 			tempSet.erase(rm);
 			if (pool.find(tempSet) == pool.end()) {
 				isPruned = true;
 				break;
 			}
+			tempSet.insert(tmp);
 		}
 		if (isPruned)
 			itr = candidate.erase(itr);
@@ -236,6 +239,7 @@ void printToOutputFile()
 
 /*
  * lookup DB to check whether provided itemset is frequent or not.
+ * This function also saves itemsetFrequency if itemset is frequent.
  */
 bool isFrequent(const set<int>& curItemset)
 {
@@ -253,8 +257,10 @@ bool isFrequent(const set<int>& curItemset)
 			cnt++;
 	}
 	// cout << setToString(curItemset) << " " << (cnt/totalTxn)*100 << endl;
-	if ((cnt/totalTxn)*100 >= minSupport)
+	if ((cnt/totalTxn)*100 >= minSupport) {
+		itemsetFrequency[curItemset] = cnt;
 		return true;
+	}
 	else
 		return false;
 }
@@ -265,17 +271,11 @@ bool isFrequent(const set<int>& curItemset)
 int calcSupport(const set<int>& fp1, const set<int>& fp2)
 {
 	set<int> unionPattern;
-	int cnt = 0;
 	set_union(fp1.begin(), fp1.end(),
 				fp2.begin(), fp2.end(),
 				inserter(unionPattern, unionPattern.begin()));
-	for (auto& txn : transaction) {
-		if (includes(txn.begin(), txn.end(),
-		             unionPattern.begin(), unionPattern.end()))
-			cnt++;
-	}
 
-	return cnt;
+	return itemsetFrequency[unionPattern];
 }
 
 /*

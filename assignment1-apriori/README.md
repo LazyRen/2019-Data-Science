@@ -26,18 +26,24 @@ Below lists must be pre-installed before executing or compiling.
 |  make charm  | create charm.exe file                   |
 |  make clean  | remove all compiled source (*.o, *.exe) |
 
+![compile](./assets/comile_and_run.png)
+
 ### How to Run
 
 #### Apriori.exe & Charm.exe
 
 Below commands will execute program to analyze input file and save association rules and related information to the output file.
 
-charm algorithm works much faster than apriori algorithm, but consumes more momory. So if the input file  is too large, program might terminated due to lack of memory issue.<br>On the other hand, apriori algorithm works much slower since it repeatedly reads the whole DB, but consumes less memory.<br>So use which ever works better at given input. I highly recommand to give charm a shot before apriori.
+charm.exe simulates charm algorithm, produced because of my misunderstanding of assignment. It does produce the same output, but you can safely ignore it.
 
 ```bash
 ./apriori.exe [min_support] [input file] [output file]
 ./charm.exe [min_support] [input file] [output file]
 ```
+
+![apriori](./assets/apriori.png)
+
+![charm](./assets/charm.png)
 
 **Note** that program will terminate immediately if
 
@@ -69,7 +75,9 @@ If `-all` or `-A` is given as argv, script will automatically generate all 4 tes
 | test3.txt      | 10000             | 20                    | 290 KB            |
 | test4.txt      | 100000            | 30                    | 4.6 MB            |
 
+![input_generator](./assets/input_generator.png)
 
+![input_generator2](./assets/input_generator2.png)
 
 ##Implementation
 
@@ -79,7 +87,7 @@ If `-all` or `-A` is given as argv, script will automatically generate all 4 tes
 
 ### Apriori
 
-Among below functions, I will not cover language-specific functions such as `parseArgv()` , `setToString()` etc. They are well explained within code with fluent amount of comments.<br>Please execuse me for this, because I also have charm algorithm left to explain.
+Among below functions, I will not cover language-specific functions such as `parseArgv()` , `setToString()` etc. They are well explained within code with fluent amount of comments.<br>
 
 ```c++
 void parseArgv(int argc, char *argv[]);
@@ -101,13 +109,16 @@ void printItemset();
 ```c++
 vector<set<int> > transaction;
 vector<set<set<int> > > itemset;
+map<set<int>, int> itemsetFrequency;
 ```
 
 Each item in transaction vector represents one row(txn) from input file. Since transaction does not contain 
 
 duplication, set is used to represent the row.<br>itemset is bit more complex than transaction.<br>itemset[1] = set of FPs with length 1, itemset[2] = set of FPs with length 2 ...
 
-In itemset[n], another set is nested within set. Each **inner set** represents actual **FP**. Outter set is just a container to prevent duplicate. Thanks to STL set, programmer(myself) does not have to worry about inserting already existing value.<br>
+In itemset[n], another set is nested within set. Each **inner set** represents actual **FP**. Outter set is just a container to prevent duplicate. Thanks to STL set, programmer(me) does not have to worry about inserting already existing value.<br>
+
+`map<set<int>`, int> holds count of `set<int>`(itemset) within DB, preventing redundant DB searching.
 
 #### Program Flow
 
@@ -147,8 +158,6 @@ for (auto itr = itemset[1].begin(); itr != itemset[1].end(); ) {
     itr = itemset[1].erase(itr);
 }
 ```
-
-
 
 After all transactions are safely stored in `vector<set<int> > transaction`, generating FP starts by creating *0-FP*(empty set) and *1-FP*.<br>In order to generate *size-1 FP*, simply insert all items from DB and remove item with support < minSupport.<br>
 
@@ -221,11 +230,12 @@ void pruning(set<set<int> >& candidate, int poolSize)
 
 ##### isFrequent()
 
-Even after pruning is done, remaining candidates still have some posibility of not being FP. So we must check it's actual support and compare it with minSupport. This is done by `isFrequent()`. It's short-simple function that lookups the whole DB.<br>Time Complexity = O(rc) *r = number of transaction* *c = number of items in row*
+Even after pruning is done, remaining candidates still have some posibility of not being FP. So we must check it's actual support and compare it with minSupport. This is done by `isFrequent()`. It's short-simple function that lookups the whole DB.<br>To save future DB searching, it saves frequency of itemset to `map<set<int>, int> > itemsetFrequency`<br>Time Complexity = O(rc) *r = number of transaction* *c = number of items in row*
 
 ```c++
 /*
  * lookup DB to check whether provided itemset is frequent or not.
+ * This function also saves itemsetFrequency if itemset is frequent.
  */
 bool isFrequent(const set<int>& curItemset)
 {
@@ -243,8 +253,10 @@ bool isFrequent(const set<int>& curItemset)
 			cnt++;
 	}
 
-	if ((cnt/totalTxn)*100 >= minSupport)
+	if ((cnt/totalTxn)*100 >= minSupport) {
+		itemsetFrequency[curItemset] = cnt;
 		return true;
+	}
 	else
 		return false;
 }
@@ -274,8 +286,6 @@ while (true) {
   itemsetSize++;
 }
 ```
-
-
 
 When function breaks out of infinite-loop, all FP from input file is created. Now `main()` calls `printToOutputFile()` which not only writes actual format to file, but also finds association rules to write.
 
@@ -323,3 +333,68 @@ void printToOutputFile()
 }
 ```
 
+##### calcSupport()
+
+Thanks to saving frequency in `map<set<int>, int> > itemsetFrequency`, it simply unions two argvs and search it from map. If key does not exist, it will return 0.
+
+```c++
+/*
+ * return number of transactions that contain [item_set] ∪ [associative_item_set]
+ */
+int calcSupport(const set<int>& fp1, const set<int>& fp2)
+{
+	set<int> unionPattern;
+	set_union(fp1.begin(), fp1.end(),
+				fp2.begin(), fp2.end(),
+				inserter(unionPattern, unionPattern.begin()));
+
+	return itemsetFrequency[unionPattern];
+}
+```
+
+
+
+##### isDisjoint()
+
+It's a helper function that checks whether two sets are disjoint or not.
+
+```c++
+/*
+ * Helper function to check if intersection of two sets is empty
+ * https://stackoverflow.com/questions/1964150/c-test-if-2-sets-are-disjoint
+ */
+template<class Set1, class Set2>
+bool isDisjoint(const Set1 &set1, const Set2 &set2)
+{
+	if (set1.empty() || set2.empty())
+		return true;
+
+	typename Set1::const_iterator
+		it1 = set1.begin(),
+		it1End = set1.end();
+	typename Set2::const_iterator
+		it2 = set2.begin(),
+		it2End = set2.end();
+
+	if (*it1 > *set2.rbegin() || *it2 > *set1.rbegin())
+		return true;
+
+	while (it1 != it1End && it2 != it2End) {
+		if (*it1 == *it2) return false;
+		if (*it1 < *it2) { it1++; }
+		else { it2++; }
+	}
+
+	return true;
+}
+```
+
+
+
+## Test Results
+
+![apriori](./assets/apriori.png)
+
+![diff](./assets/diff.png)
+
+As you can see, output of apriori & charm has no diffrence at all.
