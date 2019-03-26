@@ -59,11 +59,11 @@ However, any extra argvs will be ignored and does not affect program's execution
 
 #### input_generator.py
 
-This python3 script will generate test files including given example.
+This python3 script will generate test files including given example.<br>Either of below commands will execute script. But file needs execute permission in order to use first one.<br>If first command failes due to permission issue, try second command, or give file a execute permission.
 
 ```bash
 ./input_generator.py (optional argv)
-python3 input_generator.py
+python3 input_generator.py (optional argv)
 ```
 
 If `-all` or `-A` is given as argv, script will automatically generate all 4 test files.<br>Else, you can choose which test file to generate.
@@ -79,7 +79,7 @@ If `-all` or `-A` is given as argv, script will automatically generate all 4 tes
 
 ![input_generator2](./assets/input_generator2.png)
 
-##Implementation
+## Implementation
 
 #### Terminology
 
@@ -112,9 +112,7 @@ vector<set<set<int> > > itemset;
 map<set<int>, int> itemsetFrequency;
 ```
 
-Each item in transaction vector represents one row(txn) from input file. Since transaction does not contain 
-
-duplication, set is used to represent the row.<br>itemset is bit more complex than transaction.<br>itemset[1] = set of FPs with length 1, itemset[2] = set of FPs with length 2 ...
+Each item in transaction vector represents one row(txn) from input file. Since transaction does not contain duplication, set is used to represent the row.<br>itemset is bit more complex than transaction.<br>itemset[1] = set of FPs with length 1, itemset[2] = set of FPs with length 2 ...
 
 In itemset[n], another set is nested within set. Each **inner set** represents actual **FP**. Outter set is just a container to prevent duplicate. Thanks to STL set, programmer(me) does not have to worry about inserting already existing value.<br>
 
@@ -183,7 +181,7 @@ void generateCandidate(set<set<int> >& candidate, int poolSize)
 						nextItr->begin(), nextItr->end(),
 						inserter(newItemset, newItemset.begin()));
 			if (newItemset.size() != poolSize + 1)
-				continue;
+				break;
 			candidate.insert(newItemset);
 		}
 	}

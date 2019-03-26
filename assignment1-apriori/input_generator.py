@@ -538,7 +538,7 @@ if __name__ == '__main__':
 			print("1. Original Input File")
 			print("2. Small Test  (maxLine: 1000   Item Number: -5  ~ 15)")
 			print("3. Medium Test (maxLine: 10000  Item Number: -8  ~ 32)")
-			print("4. Large Test  (maxLine: 100000 Item Number: -15 ~ 45)")
+			print("4. Large Test  (maxLine: 100000 Item Number: -8  ~ 32)")
 			inp = int(input("Input: "))
 			if 0 <= inp and inp <= 4:
 				selected.append(inp)
@@ -556,5 +556,5 @@ if __name__ == '__main__':
 		elif i == 3:
 			print("Generation took %.2f secs" % generate(outFile, 10000, 40))
 		elif i == 4:
-			print("Generation took %.2f secs" % generate(outFile, 100000, 60))
+			print("Generation took %.2f secs" % generate(outFile, 100000, 40))
 	print("Terminating Test Generator")

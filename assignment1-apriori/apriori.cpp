@@ -165,7 +165,7 @@ void generateCandidate(set<set<int> >& candidate, int poolSize)
 						nextItr->begin(), nextItr->end(),
 						inserter(newItemset, newItemset.begin()));
 			if (newItemset.size() != poolSize + 1)
-				continue;
+				break;
 			candidate.insert(newItemset);
 		}
 	}
