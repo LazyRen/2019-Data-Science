@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 from collections import defaultdict, Counter
-import math
+from math import log
 import sys
 
 class Node:
@@ -11,10 +11,17 @@ class Node:
 		self.children = dict()
 		self.isLeaf = isLeaf
 		self.classLabel = classLabel
-
-attrHeader = list()
-samples = list()
-attrValues = defaultdict(lambda: set())
+	def __repr__(self):
+		if self.isLeaf:
+			return "Leaf Node"
+		else:
+			return "Internal Node"
+	def __str__(self):
+		ret = repr(self) + "\n"
+		ret += "attr: " + self.attr + "\n"
+		if self.classLabel != "":
+			ret += "classLabel: " + self.classLabel + "\n"
+		return ret
 
 def loadData(fileName, header, rows, attrValues=None):
 	with open(fileName, 'r') as openedFile:
@@ -26,10 +33,8 @@ def loadData(fileName, header, rows, attrValues=None):
 				rows.extend([line])
 				for col in range(headerLength):
 					attrValues[header[col]].add(line[col])
-			print(rows)
 		else:
 			rows.extend(line.rstrip('\n').split('\t') for line in openedFile.readlines())
-			print(rows)
 
 
 
@@ -37,7 +42,7 @@ def calcEntropy(classified):
 	ret = 0.0
 	for val in classified:
 		p = val / sum(classified)
-		ret -= p * math.log(p, 2)
+		ret -= p * log(p, 2)
 	return ret
 
 def calcGains(rows):
@@ -59,7 +64,7 @@ def attributeSelection(rows):
 	infoGains = calcGains(rows)
 	return infoGains.index(max(infoGains))
 
-def generateTree(parent, attributes, dataPartitions):
+def generateTree(parent, attributes, dataPartitions, attrValues):
 	classList = [row[-1] for row in dataPartitions]
 	classCounter = Counter(classList)
 	majorityVoted = classCounter.most_common(1)[0][0]
@@ -85,37 +90,36 @@ def generateTree(parent, attributes, dataPartitions):
 	for attrValue in attrValues[curNode.attr]:
 		if not partition[attrValue]:# partition is empty
 			curNode.children[attrValue] = Node(curNode, "", True, majorityVoted)
-		else:
-			curNode.children[attrValue] = generateTree(curNode, attributes, partition[attrValue])
-	# for item in partition.items():
-	# 	curNode.children[item[0]] = generateTree(curNode, attributes, item[1])
+		else:# recursively generate subtree
+			curNode.children[attrValue] = generateTree(curNode, attributes, partition[attrValue], attrValues)
 	attributes.insert(selectedAttrIdx, curNode.attr)
 	return curNode
 
 def _classification(node, attributes, sample):
 	if node.isLeaf:
 		return node.classLabel
-	print(node.attr)
-	print(attributes, attributes.index(node.attr), sample[attributes.index(node.attr)])
-	print(node.children)
 	return _classification(node.children[sample[attributes.index(node.attr)]], attributes, sample)
 
-def classification(testFile, resultFile, tree):
+def classification(testFile, resultFile, tree, attrHeader):
 	testHeader = list()
 	testSamples = list()
 	loadData(testFile, testHeader, testSamples)
 	with open(resultFile, 'w') as outFile:
+		outFile.write("")
 		outFile.write('\t'.join(attrHeader) + '\n')
 		for sample in testSamples:
 			result = _classification(tree, testHeader, sample)
 			outFile.write('\t'.join(sample) + '\t' + result + '\n')
 
 if __name__ == "__main__":
+	attrHeader = list()
+	samples = list()
+	attrValues = defaultdict(lambda: set())
 	if len(sys.argv) != 4:
 		print("3 arguments are required to run the program")
 		print("***** USAGE *****")
 		print("%s [train file] [test file] [result file]" % sys.argv[0])
 		sys.exit("argv error")
 	loadData(sys.argv[1], attrHeader, samples, attrValues)
-	decisionTree = generateTree(None, attrHeader, samples)
-	classification(sys.argv[2], sys.argv[3], decisionTree)
+	decisionTree = generateTree(None, attrHeader, samples, attrValues)
+	classification(sys.argv[2], sys.argv[3], decisionTree, attrHeader)
