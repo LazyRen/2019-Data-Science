@@ -32,6 +32,7 @@ def runTest(trainFile, testFile, resultFile, answerFile):
 				line = wa[wa.find(":")+2 : wa.find("->")-1]
 				line = line.split('\t')[:-1]
 				classification(decisionTree, attrHeader, line, True)
+				print(attrHeader[:-1])
 				print(wa)
 
 def score(answerFile, resultFile, wrongAns = None):

@@ -5,12 +5,13 @@ from math import log
 import sys
 
 class Node:
-	def __init__(self, parent, attr, isLeaf = False, classLabel = ""):
+	def __init__(self, parent, attr, classLabel, cnt, isLeaf = False):
 		self.parent = parent
 		self.attr = attr
 		self.children = dict()
-		self.isLeaf = isLeaf
 		self.classLabel = classLabel
+		self.cnt = cnt
+		self.isLeaf = isLeaf
 	def __repr__(self):
 		if self.isLeaf:
 			return "Leaf Node"
@@ -18,10 +19,10 @@ class Node:
 			return "Internal Node"
 	def __str__(self):
 		ret = repr(self) + "\n"
-		if self.isLeaf:
-			ret += "classLabel: " + self.classLabel + "\n"
-		else:
+		if not self.isLeaf:
 			ret += "attr: " + self.attr + "\n"
+		ret += "classLabel: " + self.classLabel + "\n"
+		ret += "count: " + str(self.cnt) + "\n"
 		return ret
 
 def loadData(fileName, header, rows, attrValues = None):
@@ -37,18 +38,24 @@ def loadData(fileName, header, rows, attrValues = None):
 		else:
 			rows.extend(line.rstrip('\n').split('\t') for line in openedFile.readlines())
 
-
-
 def calcEntropy(classified):
-	ret = 0.0
+	info = 0.0
 	for val in classified:
 		p = val / sum(classified)
-		ret -= p * log(p, 2)
-	return ret
+		info -= p * log(p, 2)
+	return info
+
+def calcSplitInfo(classCounter, totalD):
+	splitInfo = 0.0
+	for classified in classCounter.values():
+		partition = sum(classified.values()) / totalD
+		splitInfo -= partition * log(partition, 2)
+	return splitInfo
+
 
 def calcGains(rows):
 	infoGains = []
-	DBsize = len(rows)
+	totalD = len(rows)
 	totalEntropy = calcEntropy(Counter([row[-1] for row in rows]).values())
 	for col in range(len(rows[0]) - 1):
 		entropy = 0.0
@@ -57,8 +64,8 @@ def calcGains(rows):
 		for row in rows:
 			classCounter[row[col]][row[-1]] += 1
 		for classified in classCounter.values():
-			entropy += sum(classified.values()) / DBsize * calcEntropy(classified.values())
-		infoGains.append(totalEntropy - entropy)
+			entropy += sum(classified.values()) / totalD * calcEntropy(classified.values())
+		infoGains.append((totalEntropy - entropy) / calcSplitInfo(classCounter, totalD))
 	return infoGains
 
 def attributeSelection(rows):
@@ -69,18 +76,19 @@ def generateTree(parent, attributes, dataPartitions, attrValues):
 	classList = [row[-1] for row in dataPartitions]
 	classCounter = Counter(classList)
 	majorityVoted = classCounter.most_common(1)[0][0]
+	totalLines = len(dataPartitions)
 	# 1: tuples are all of the same class
 	if (classCounter.most_common(1)[0][1] == len(classList)):
-		return Node(parent, "", True, majorityVoted)
+		return Node(parent, "", majorityVoted, totalLines, True)
 
 	# 2: attributes lits is empty MAJORITY VOTING
 	if len(attributes) == 0:
-		return Node(parent, "", True, majorityVoted)
+		return Node(parent, "", majorityVoted, totalLines, True)
 
 	del classList
 	del classCounter
 	selectedAttrIdx = attributeSelection(dataPartitions)
-	curNode = Node(parent, attributes[selectedAttrIdx])
+	curNode = Node(parent, attributes[selectedAttrIdx], majorityVoted, totalLines)
 	del attributes[selectedAttrIdx]
 	partition = defaultdict(lambda: [])
 	for row in dataPartitions:
@@ -89,8 +97,8 @@ def generateTree(parent, attributes, dataPartitions, attrValues):
 		partition[attrValue].append(row)
 	dataPartitions.clear()
 	for attrValue in attrValues[curNode.attr]:
-		if not partition[attrValue]:# partition is empty
-			curNode.children[attrValue] = Node(curNode, "", True, majorityVoted)
+		if not partition[attrValue]:# 3: partition is empty no further recursion
+			curNode.children[attrValue] = Node(curNode, "", majorityVoted, totalLines, True)
 		else:# recursively generate subtree
 			curNode.children[attrValue] = generateTree(curNode, attributes, partition[attrValue], attrValues)
 	attributes.insert(selectedAttrIdx, curNode.attr)
@@ -98,7 +106,7 @@ def generateTree(parent, attributes, dataPartitions, attrValues):
 
 def classification(node, attributes, sample, debugFlag = False):
 	if debugFlag:
-		print(str(node) + "\n")
+		print(node)
 	if node.isLeaf:
 		return node.classLabel
 	return classification(node.children[sample[attributes.index(node.attr)]], attributes, sample, debugFlag)

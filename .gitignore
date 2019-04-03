@@ -2,7 +2,7 @@
 input*.txt
 output*.txt
 test*.txt
-dt_result*.txt
+*debug*.txt
 
 # compiled source
 *.com
