@@ -2,6 +2,7 @@
 input*.txt
 output*.txt
 test*.txt
+de_result*.txt
 
 # compiled source
 *.com
