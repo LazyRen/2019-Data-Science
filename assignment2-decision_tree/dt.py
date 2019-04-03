@@ -5,7 +5,7 @@ from math import log
 import sys
 
 class Node:
-	def __init__(self, parent, attr, isLeaf=False, classLabel=""):
+	def __init__(self, parent, attr, isLeaf = False, classLabel = ""):
 		self.parent = parent
 		self.attr = attr
 		self.children = dict()
@@ -18,12 +18,13 @@ class Node:
 			return "Internal Node"
 	def __str__(self):
 		ret = repr(self) + "\n"
-		ret += "attr: " + self.attr + "\n"
-		if self.classLabel != "":
+		if self.isLeaf:
 			ret += "classLabel: " + self.classLabel + "\n"
+		else:
+			ret += "attr: " + self.attr + "\n"
 		return ret
 
-def loadData(fileName, header, rows, attrValues=None):
+def loadData(fileName, header, rows, attrValues = None):
 	with open(fileName, 'r') as openedFile:
 		header.extend(openedFile.readline().rstrip('\n').split('\t'))
 		if attrValues is not None:
@@ -95,12 +96,14 @@ def generateTree(parent, attributes, dataPartitions, attrValues):
 	attributes.insert(selectedAttrIdx, curNode.attr)
 	return curNode
 
-def _classification(node, attributes, sample):
+def classification(node, attributes, sample, debugFlag = False):
+	if debugFlag:
+		print(str(node) + "\n")
 	if node.isLeaf:
 		return node.classLabel
-	return _classification(node.children[sample[attributes.index(node.attr)]], attributes, sample)
+	return classification(node.children[sample[attributes.index(node.attr)]], attributes, sample, debugFlag)
 
-def classification(testFile, resultFile, tree, attrHeader):
+def generateResult(testFile, resultFile, tree, attrHeader):
 	testHeader = list()
 	testSamples = list()
 	loadData(testFile, testHeader, testSamples)
@@ -108,7 +111,7 @@ def classification(testFile, resultFile, tree, attrHeader):
 		outFile.write("")
 		outFile.write('\t'.join(attrHeader) + '\n')
 		for sample in testSamples:
-			result = _classification(tree, testHeader, sample)
+			result = classification(tree, testHeader, sample)
 			outFile.write('\t'.join(sample) + '\t' + result + '\n')
 
 if __name__ == "__main__":
@@ -122,4 +125,4 @@ if __name__ == "__main__":
 		sys.exit("argv error")
 	loadData(sys.argv[1], attrHeader, samples, attrValues)
 	decisionTree = generateTree(None, attrHeader, samples, attrValues)
-	classification(sys.argv[2], sys.argv[3], decisionTree, attrHeader)
+	generateResult(sys.argv[2], sys.argv[3], decisionTree, attrHeader)
