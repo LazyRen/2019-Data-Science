@@ -43,7 +43,6 @@ def score(answerFile, resultFile):
 		if answer[row] == prediction[row]:
 			correct += 1
 	return correct, len(answer)
-	print(correct + "/" + len(answer))
 
 
 if __name__ == "__main__":
