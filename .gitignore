@@ -2,7 +2,7 @@
 input*.txt
 output*.txt
 test*.txt
-de_result*.txt
+dt_result*.txt
 
 # compiled source
 *.com
@@ -12,6 +12,7 @@ de_result*.txt
 *.o
 *.so
 *.out
+__pycache__/
 
 # Packages
 *.7z
