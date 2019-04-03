@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 
 from collections import defaultdict
-from dt import loadData, generateTree, classification, generateResult
+from dt import loadData, generateTree, classification, generateResult, reducedErrorPruning
+from random import shuffle
+from copy import deepcopy
 import datetime
 
 def runTest(trainFile, testFile, resultFile, answerFile):
@@ -11,6 +13,9 @@ def runTest(trainFile, testFile, resultFile, answerFile):
 
 	startTime = datetime.datetime.now()
 	loadData(trainFile, attrHeader, samples, attrValues)
+	shuffle(samples)
+	testSamples = deepcopy(samples)
+	testHeader = deepcopy(attrHeader)
 	decisionTree = generateTree(None, attrHeader, samples, attrValues)
 	cut = 0 if trainFile.find('/') == -1 else trainFile.find('/') + 1
 	elapsedTime = datetime.datetime.now() - startTime
@@ -55,7 +60,7 @@ def score(answerFile, resultFile, wrongAns = None):
 			correct += 1
 		else:
 			if wrongAns is not None:
-				wrongAns.append(str(row) + ": " + prediction[row] + " -> " + answer[row].split('\t')[-1])
+				wrongAns.append(str(row) + ": " + prediction[row] + " -> " + answer[row].split('\t')[-1] + "\n\n")
 
 	return correct, len(answer)
 

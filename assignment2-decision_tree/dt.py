@@ -122,6 +122,29 @@ def generateResult(testFile, resultFile, tree, attrHeader):
 			result = classification(tree, testHeader, sample)
 			outFile.write('\t'.join(sample) + '\t' + result + '\n')
 
+def getPredictionCnt(tree, attributes, samples):
+	cnt = 0
+	for row in samples:
+		t = classification(tree, attributes, row)
+		if row[-1] == classification(tree, attributes, row):
+			cnt += 1
+	return cnt
+
+def _pruning(tree, node, attributes, samples, prevCnt):
+	if node.isLeaf:
+		return
+	node.isLeaf = True
+	cnt = getPredictionCnt(tree, attributes, samples)
+	if cnt >= prevCnt:
+		node.children.clear()
+		return
+	node.isLeaf = False
+	for child in node.children.values():
+		_pruning(tree, child, attributes, samples, prevCnt)
+
+def reducedErrorPruning(tree, attrHeader, samples):
+	_pruning(tree, tree, attrHeader, samples, getPredictionCnt(tree, attrHeader, samples))
+
 if __name__ == "__main__":
 	attrHeader = list()
 	samples = list()
@@ -133,4 +156,5 @@ if __name__ == "__main__":
 		sys.exit("argv error")
 	loadData(sys.argv[1], attrHeader, samples, attrValues)
 	decisionTree = generateTree(None, attrHeader, samples, attrValues)
+	# reducedErrorPruning(decisionTree, attrHeader, samples[cut:])
 	generateResult(sys.argv[2], sys.argv[3], decisionTree, attrHeader)
