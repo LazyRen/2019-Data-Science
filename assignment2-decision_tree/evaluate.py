@@ -9,14 +9,17 @@ import datetime
 def runTest(trainFile, testFile, resultFile, answerFile):
 	attrHeader = list()
 	samples = list()
-	attrValues = defaultdict(lambda: set())
 
 	startTime = datetime.datetime.now()
-	loadData(trainFile, attrHeader, samples, attrValues)
-	shuffle(samples)
-	testSamples = deepcopy(samples)
-	testHeader = deepcopy(attrHeader)
+	attrValues = loadData(trainFile, attrHeader, samples, True)
+
+	# shuffle(samples)
+	# pruneCut = int(9/10 * len(samples))
+	# pruneHeader = deepcopy(attrHeader)
+	# pruneSamples = deepcopy(samples)
+
 	decisionTree = generateTree(None, attrHeader, samples, attrValues)
+	# reducedErrorPruning(decisionTree, pruneHeader, pruneSamples[pruneCut:])
 	cut = 0 if trainFile.find('/') == -1 else trainFile.find('/') + 1
 	elapsedTime = datetime.datetime.now() - startTime
 	print("Generating decision tree for " + trainFile[cut:] + " took " + str(elapsedTime.total_seconds()) + " seconds")
@@ -34,11 +37,17 @@ def runTest(trainFile, testFile, resultFile, answerFile):
 		inp = input()
 		if inp == 'y' or inp == 'Y':
 			for wa in wrongAns:
-				line = wa[wa.find(":")+2 : wa.find("->")-1]
-				line = line.split('\t')[:-1]
+				line = wa[1:-1]
 				classification(decisionTree, attrHeader, line, True)
-				print(attrHeader[:-1])
-				print(wa)
+				print("       ", end='')
+				printHeader = deepcopy(attrHeader)
+				printHeader = printHeader[:-1] + ["prediction", "answer"]
+				for attr in printHeader:
+					print(f"{attr:15}", end='')
+				print(f"\n{wa[0]:4}:  ", end='')
+				for col in wa[1:]:
+					print(f"{col:15}", end='')
+				print("\n\n")
 
 def score(answerFile, resultFile, wrongAns = None):
 	answer = []
@@ -60,7 +69,8 @@ def score(answerFile, resultFile, wrongAns = None):
 			correct += 1
 		else:
 			if wrongAns is not None:
-				wrongAns.append(str(row) + ": " + prediction[row] + " -> " + answer[row].split('\t')[-1] + "\n\n")
+				wa = [row] + prediction[row].split('\t') + [answer[row].split('\t')[-1]]
+				wrongAns.append(wa)
 
 	return correct, len(answer)
 
