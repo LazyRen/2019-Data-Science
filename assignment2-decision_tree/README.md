@@ -76,7 +76,7 @@ decision tree is generated with above `class Node`.<br>`attr` : Selected attribu
 
 
 
-### generateTree(*parent*, *attributes*, *dataPartitions*, *attrValues*)
+### generateTree()
 
 This function is recursively called to construct decision tree.<br>Recursion ends at 3 conditions.
 
@@ -103,6 +103,7 @@ Current version of `generateTree` uses improved version of gain ratio. Accuracy 
 It's the first implementation I used. choose attribute with highest information gain.
 
 ```python
+# Calculate Entropy for given attribute.
 def calcEntropy(classified):
 	ret = 0.0
 	for val in classified:
@@ -110,7 +111,7 @@ def calcEntropy(classified):
 		ret -= p * log(p, 2)
 	return ret
 
-
+# Calculate information gain.
 def calcGains(rows):
 	infoGains = []
 	DBsize = len(rows)
@@ -139,6 +140,7 @@ def attributeSelection(rows):
 *Information gain* is biased toward attributes having a large number of values.<br>*Gain ratio* applies a kind of normalization to *information gain* using a "split information" to overcome bias.
 
 ```python
+# Calculate Entropy for given attribute.
 def calcEntropy(classified):
     info = 0.0
     for val in classified:
@@ -147,6 +149,7 @@ def calcEntropy(classified):
     return info
 
 
+# Calculate split info for gain ratio.
 def calcSplitInfo(classCounter, totalD):
     splitInfo = 0.0
     for classified in classCounter.values():

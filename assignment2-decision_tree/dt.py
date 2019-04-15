@@ -47,7 +47,7 @@ def loadData(fileName, header, rows, getAttrValue=False):
             rows.extend(line.rstrip('\n').split('\t') for line in openedFile.readlines())
             return None
 
-
+# Calculate Entropy for given attribute.
 def calcEntropy(classified):
     info = 0.0
     for val in classified:
@@ -55,7 +55,7 @@ def calcEntropy(classified):
         info -= p * log(p, 2)
     return info
 
-
+# Calculate split info for gain ratio.
 def calcSplitInfo(classCounter, totalD):
     splitInfo = 0.0
     for classified in classCounter.values():
