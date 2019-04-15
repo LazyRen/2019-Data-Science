@@ -8,19 +8,23 @@ import datetime
 
 
 def runTest(trainFile, testFile, resultFile, answerFile):
+    usePruning = False
     attrHeader = list()
     samples = list()
 
     startTime = datetime.datetime.now()
     attrValues = loadData(trainFile, attrHeader, samples, True)
 
-    decisionTree = generateTree(None, attrHeader, samples, attrValues)
+    if usePruning:
+        pruneCut = int((9/10) * len(samples))
+        pruneHeader = deepcopy(attrHeader)
+        pruneSamples = deepcopy(samples)
+        shuffle(pruneSamples)
 
-    # shuffle(samples)
-    # pruneCut = int(9/10 * len(samples))
-    # pruneHeader = deepcopy(attrHeader)
-    # pruneSamples = deepcopy(samples)
-    # reducedErrorPruning(decisionTree, pruneHeader, pruneSamples[pruneCut:])
+        decisionTree = generateTree(None, attrHeader, pruneSamples[:pruneCut], attrValues)
+        reducedErrorPruning(decisionTree, pruneHeader, pruneSamples[pruneCut:])
+    else:
+        decisionTree = generateTree(None, attrHeader, samples, attrValues)
 
     cut = trainFile.rfind('/') + 1
     elapsedTime = datetime.datetime.now() - startTime
@@ -35,9 +39,9 @@ def runTest(trainFile, testFile, resultFile, answerFile):
     print(str(correct) + "/" + str(total))
     print("Classification for " + testFile[cut:] + " took " + str(elapsedTime.total_seconds()) + " seconds\n")
     if correct != total:
-        print("Check diffrence?")
+        print("Check diffrence? (Y / N)")
         inp = input()
-        if inp == 'y' or inp == 'Y':
+        if inp.casefold() == 'y' or inp.casefold() == 'yes':
             for wa in wrongAns:
                 line = wa[1:-1]
                 classification(decisionTree, attrHeader, line, True)
@@ -80,10 +84,10 @@ def score(answerFile, resultFile, wrongAns=None):
 
 
 if __name__ == "__main__":
-    trainFiles = ["data/dt_train.txt", "data/dt_train1.txt"]
-    testFiles = ["data/dt_test.txt", "data/dt_test1.txt"]
-    outputFiles = ["test/dt_result.txt", "test/dt_result1.txt"]
-    answerFiles = ["test/dt_answer.txt", "test/dt_answer1.txt"]
+    trainFiles  = ["data/dt_train.txt",  "data/dt_train1.txt"  ]
+    testFiles   = ["data/dt_test.txt",   "data/dt_test1.txt"   ]
+    outputFiles = ["test/dt_result.txt", "test/dt_result1.txt" ]
+    answerFiles = ["test/dt_answer.txt", "test/dt_answer1.txt" ]
 
     for i in range(len(testFiles)):
         runTest(trainFiles[i], testFiles[i], outputFiles[i], answerFiles[i])

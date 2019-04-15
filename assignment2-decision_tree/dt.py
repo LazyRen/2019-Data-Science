@@ -61,7 +61,7 @@ def calcSplitInfo(classCounter, totalD):
     for classified in classCounter.values():
         partition = sum(classified.values()) / totalD
         splitInfo -= partition * log(partition, 2)
-    return splitInfo
+    return splitInfo + 0.00000001
 
 
 # Calculate gain ratio to be precise.
@@ -89,7 +89,6 @@ def attributeSelection(rows):
 
 
 # If there is a tie, return attribute that has least amount.
-# 318 -> 322 boosted.
 def getMajorityVoted(classCounter, classHeader, attrValues):
     candidates = classCounter.most_common()
     vote = candidates[0][1]
@@ -109,19 +108,18 @@ def getMajorityVoted(classCounter, classHeader, attrValues):
 # Majority vote will always be saved to the node for the debugging purpose.
 # Recursion ends at 3 conditions.
 # 1: tuples are all of the same class
-# 2: attributes lits is empty MAJORITY VOTING
+# 2: attributes list is empty (MAJORITY VOTING)
 # 3: partition is empty.
 def generateTree(parent, attributes, dataPartitions, attrValues):
     classList = [row[-1] for row in dataPartitions]
     classCounter = Counter(classList)
     majorityVoted = getMajorityVoted(classCounter, attributes[-1], attrValues)
-    # majorityVoted = classCounter.most_common(1)[0][0]
     totalLines = len(dataPartitions)
 
     # 1: tuples are all of the same class
     if (classCounter.most_common(1)[0][1] == len(classList)):
         return Node(parent, "", majorityVoted, totalLines, True)
-    # 2: attributes lits is empty MAJORITY VOTING
+    # 2: attributes list is empty (MAJORITY VOTING)
     if len(attributes) == 0:
         return Node(parent, "", majorityVoted, totalLines, True)
 
@@ -194,6 +192,8 @@ def _pruning(tree, node, attributes, samples, prevCnt):
     if not isSubPruned and cnt > prevCnt:
         node.isLeaf = True
         return True
+
+    return False
 
 
 # function name tells everything.
