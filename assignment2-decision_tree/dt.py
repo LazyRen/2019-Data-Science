@@ -47,6 +47,7 @@ def loadData(fileName, header, rows, getAttrValue=False):
             rows.extend(line.rstrip('\n').split('\t') for line in openedFile.readlines())
             return None
 
+
 # Calculate Entropy for given attribute.
 def calcEntropy(classified):
     info = 0.0
@@ -54,6 +55,7 @@ def calcEntropy(classified):
         p = val / sum(classified)
         info -= p * log(p, 2)
     return info
+
 
 # Calculate split info for gain ratio.
 def calcSplitInfo(classCounter, totalD):
@@ -200,6 +202,7 @@ def _pruning(tree, node, attributes, samples, prevCnt):
 # Is not activated because pruning decreases the accuracy at the moment.
 def reducedErrorPruning(tree, attrHeader, samples):
     _pruning(tree, tree, attrHeader, samples, getPredictionCnt(tree, attrHeader, samples))
+
 
 if __name__ == "__main__":
     attrHeader = list()
