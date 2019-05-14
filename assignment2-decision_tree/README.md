@@ -45,7 +45,7 @@ Below is the example output of diffrence tracking.
 
 ## Implementation
 
-### Node class
+### class Node
 
 ```python
 class Node:
