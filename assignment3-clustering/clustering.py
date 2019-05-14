@@ -25,6 +25,9 @@ class Point:
 
 
 def loadData(fileName):
+    """
+    read 'fileName' and return list of Point objects.
+    """
     with open(fileName, 'r') as openedFile:
         dataList = []
         for line in openedFile.readlines():
@@ -35,6 +38,11 @@ def loadData(fileName):
 
 
 def findNeighbor(cur, dataList, eps):
+    """
+    Find all neighbors from cur pt.
+    Neighbors must be positioned within radius of 'eps'.
+    Time Complexity = O(n)
+    """
     neighbors = []
     for pt in dataList:
         if (cur.x - pt.x) ** 2 + (cur.y - pt.y) ** 2 <= eps ** 2:
@@ -43,6 +51,13 @@ def findNeighbor(cur, dataList, eps):
 
 
 def dbscan(dataList, maxClusterNum, eps, minPts):
+    """
+    Iterate all points to classify them as a cluster.
+    Return value 'labelConverter' is used to convert labels of cluster with small size to -1
+    if (# of clusters > maxClusterNum).
+    Time Complexity = O(n^2)
+    TODO : recluster converted points since they can be a density-connected to remained clusters.
+    """
     unvisitedPt = list(dataList)
     clusterSizeList = []
     lastClusterID = 0
@@ -76,6 +91,7 @@ def dbscan(dataList, maxClusterNum, eps, minPts):
             clusterSizeList.append((lastClusterID, clusterSize))
             lastClusterID += 1
 
+    # Create labelConverter to remove extra clusters if exist.
     labelConverter = dict()
     labelConverter[-1] = -1
     if (lastClusterID <= maxClusterNum):  # no need to remove extra clusters
@@ -91,17 +107,18 @@ def dbscan(dataList, maxClusterNum, eps, minPts):
 
 
 def createOutputFile(dataList, maxClusterNum, labelConverter, filePrefix):
+    """
+    Create (maxClusterNum) of output files containing pts' id.
+    Each output file represents one cluster.
+    If necessary, use labelConverter to reduce number of clusters.
+    Time Complexity = O(n)
+    """
     outputFileList = []
     for i in range(maxClusterNum):
         outputFileList.append(open(filePrefix + "_cluster_" + str(i) + ".txt", 'w'))
 
     for pt in dataList:
-        try:
-            matchingCluster = labelConverter[pt.label]
-        except KeyError:
-            print(labelConverter)
-            print(pt.id)
-            print(pt.label)
+        matchingCluster = labelConverter[pt.label]
         if matchingCluster == -1:
             continue
         outputFileList[matchingCluster].write(str(pt.id) + '\n')
