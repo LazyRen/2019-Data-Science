@@ -21,7 +21,7 @@ All programs are tested on macOS 10.14 & Ubuntu 18.04<br>
 python3 clustering.py [input file] [number of clusters] [Eps] [MinPts]
 ```
 
-In order to execuate program using first command, you must have execution permission for `clustering.py`.<br>If it gives permission error, either give it a execution permission or use second line command.<br>
+In order to execuate program using first command, you must have execution permission for `clustering.py`.<br>If it gives permission error, either give it an execution permission or use second command.<br>
 
 ![run](./assets/run.png)
 
@@ -38,7 +38,7 @@ Running above command will give you two options to run evaluation program.
 
 2. Run DBSCAN to create new outputFiles
 
-Either way will use ideal & created output files to evaluate the accuracy.<br>Note that in order to run first command, you **MUST** have output files ready.
+Either way program will use ideal & created output files to evaluate the accuracy.<br>Note that in order to run first command, you **MUST** have output files ready.
 
 Directory of the files may be modified with below global variables.
 
@@ -48,7 +48,7 @@ idealFileDir  = "test/"
 outputFileDir = "test/"
 ```
 
-In order to create new tests, you must append appropriate values to below list, and ideal cluster files ready at `idealFileDir`.
+In order to create new tests, you must append appropriate values to below list, and place ideal cluster files ready at `idealFileDir`.
 
 ```python
 testNameList   = ["input1", "input2", "input3" ]
