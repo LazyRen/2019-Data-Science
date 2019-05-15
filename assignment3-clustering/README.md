@@ -25,11 +25,51 @@ In order to execuate program using first command, you must have execution permis
 
 ![run](./assets/run.png)
 
+#### evaluation.py
+
+```bash
+./evaluation.py
+python3 evaluation.py
+```
+
+Running above command will give you two options to run evaluation program.
+
+1. Use existing outputfiles at test/ folder
+
+2. Run DBSCAN to create new outputFiles
+
+Either way will use ideal & created output files to evaluate the accuracy.<br>Note that in order to run first command, you **MUST** have output files ready.
+
+Directory of the files may be modified with below global variables.
+
+```python
+inputFileDir  = "data/"
+idealFileDir  = "test/"
+outputFileDir = "test/"
+```
+
+In order to create new tests, you must append appropriate values to below list, and ideal cluster files ready at `idealFileDir`.
+
+```python
+testNameList   = ["input1", "input2", "input3" ]
+clusterNumList = [8,        5,        4        ]
+epsList        = [15,       2,        5        ]
+minPtsList     = [22,       7,        5        ]
+```
+
+
+
+Score of `evaluation.py` is equal to that of `PA3.exe`. But it gives extra information about clustered data.
+
+![evaluation](./evaluation.png)
+
+![PA3](./PA3.png)
+
 
 
 ### Results
 
-Note that output files will be located on the same folder as input file. (in data folder in example.)
+Note that output files will be located on the same folder as input file. (in data folder in example)<br>< If `evaluation.py` is used to create output files(by choosing option *2*), it will generate output files at test folder. >
 
 **Result score may differ** from each excution because DBSCAN algorithm choose *random point* to generate *density-based clustering*.
 

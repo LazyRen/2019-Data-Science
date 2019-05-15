@@ -55,12 +55,18 @@ def runEvaluation(testName, maxClusterNum, totalPts):
     idealClusterList = loadClusters(idealFileDir + testName, maxClusterNum, "_ideal")
     createdClusterList = loadClusters(outputFileDir + testName, maxClusterNum, "")
     dataList = [Point(i) for i in range(totalPts)]
+    totalIdealPts = 0
+    totalCreatedPts = 0
     for cid, cluster in enumerate(idealClusterList):
+        totalIdealPts += len(cluster)
         for pt in cluster:
             dataList[int(pt)].idealLabel = cid
     for cid, cluster in enumerate(createdClusterList):
+        totalCreatedPts += len(cluster)
         for pt in cluster:
             dataList[int(pt)].clusteredLabel = cid
+    print(str(totalIdealPts) + " points are clustered in ideal files")
+    print(str(totalCreatedPts) + " points are clustered in output files")
 
     totalCmp = 0
     incorrect = 0
