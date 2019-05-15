@@ -1,7 +1,5 @@
 # input & output files
-input*.txt
 output*.txt
-test*.txt
 *debug*.txt
 
 # compiled source
