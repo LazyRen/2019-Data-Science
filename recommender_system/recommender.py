@@ -63,7 +63,7 @@ def findNeighbors(maxUID, similarityMatrix):
 
 
 def predictRating(uid, mid, ratingDict, similarityMeasure, neighbors):
-    maxKNN = 100; checked = 0
+    maxKNN = 500; checked = 0
     numerator = denominator = 0
     ret = ratingDict[uid]['mean']
 
