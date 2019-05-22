@@ -1,7 +1,7 @@
 # input & output files
 output*.txt
 *debug*.txt
-
+*base_prediction.txt
 # compiled source
 *.com
 *.class
