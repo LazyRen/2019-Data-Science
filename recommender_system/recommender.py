@@ -63,18 +63,18 @@ def findNeighbors(maxUID, similarityMatrix):
 
 
 def predictRating(uid, mid, ratingDict, similarityMeasure, neighbors):
-    maxKNN = 500; checked = 0
+    maxKNN = 50; checked = 0
     numerator = denominator = 0
     ret = ratingDict[uid]['mean']
 
     for neighbor in neighbors[uid]:
         user = neighbor[0]; similarity = neighbor[1]
-        if checked == maxKNN:
-            break
         if ratingDict[user].get(mid) is None:
             continue
+        if checked == maxKNN or similarity <= 0:
+            break
         numerator += similarity * (ratingDict[user][mid] - ratingDict[user]['mean'])
-        denominator += abs(similarity)
+        denominator += similarity
         checked += 1
 
     if denominator is 0:

@@ -9,8 +9,10 @@ from math import sqrt
 import datetime
 import subprocess
 
+inputFileDir  = "data/"
 idealFileDir  = "data/"
 outputFileDir = "data/"
+EXECUTABLE_NAME = "recommender.py"
 
 
 def loadData(fileName):
@@ -39,20 +41,27 @@ def runEvaluation(testName):
 
     RMSE = sqrt(total/tested)
     elapsedTime = datetime.datetime.now() - startTime
-    # 0.8454584 .714799906 14296 DIFF:5862
-    # 1.595384 2.545250107 50905
-    print("tested: ", tested)
-    print("RMSE: " + format(RMSE, ".7f"))
-    print(total, tested, total/tested)
+    print("RMSE: " + format(RMSE, ".7f") + "\tTotal: " + str(total))
     print(sorted(diff.items()))
-    for k, v in sorted(diff.items()):
-        print(k ** 2 * v, end="\t")
-    print("Evaluation took " + str(elapsedTime.total_seconds()) + " seconds")
-    print("\n")
+    print("Evaluation took " + str(elapsedTime.total_seconds()) + " seconds\n")
 
 
 if __name__ == "__main__":
     testNameList   = ["u1", "u2", "u3", "u4", "u5" ]
-
+    runRecommender = False
+    userInput = input("Run rocommder program? (Y/N): ")
+    if (userInput == 'Y' or userInput == 'y'):
+        runRecommender = True
     for i in range(len(testNameList)):
+        if runRecommender:
+            print("Running {} Test".format(testNameList[i]))
+            startTime = datetime.datetime.now()
+            p = subprocess.Popen(["./"+EXECUTABLE_NAME,
+                                  inputFileDir+testNameList[i]+".base",
+                                  idealFileDir+testNameList[i]+".test"],
+                                 stdin=subprocess.PIPE,
+                                 stdout=subprocess.PIPE)
+            p.wait()
+            elapsedTime = datetime.datetime.now() - startTime
+            print("Prediction took " + str(elapsedTime.total_seconds()) + " seconds\n")
         runEvaluation(testNameList[i])
