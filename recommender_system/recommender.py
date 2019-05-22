@@ -47,14 +47,14 @@ def similarityMeasure(ratingDict):
 
     # Calculate similarity using 'Pearson Correlation Coefficient'
     for user1 in range(1, maxUID):
-        for user2 in range(user1, maxUID):
+        for user2 in range(user1+1, maxUID):
             commonItem = set(ratingDict[user1].keys()).intersection(ratingDict[user2].keys())
             commonItem.remove('mean')
             if len(commonItem) is not 0:
                 similarity = numerator = denominator1 = denominator2 = 0
                 for item in commonItem:
-                    val1 = (ratingDict[user1][item] - ratingDict[user1]['mean'])
-                    val2 = (ratingDict[user2][item] - ratingDict[user2]['mean'])
+                    val1 = ratingDict[user1][item] - ratingDict[user1]['mean']
+                    val2 = ratingDict[user2][item] - ratingDict[user2]['mean']
                     numerator += val1 * val2
                     denominator1 += val1 ** 2
                     denominator2 += val2 ** 2
@@ -75,6 +75,8 @@ def findNeighbors(maxUID, similarityMatrix):
     neighbors = [[] for row in range(maxUID)]
     for user1 in range(1, maxUID):
         for user2 in range(1, maxUID):
+            if user1 == user2:
+                continue
             neighbors[user1].append((user2, similarityMatrix[user1][user2]))
         neighbors[user1] = sorted(neighbors[user1], key=itemgetter(1), reverse=True)
 
@@ -103,7 +105,7 @@ def predictRating(uid, mid, ratingDict, similarityMeasure, neighbors):
         denominator += similarity
         checked += 1
 
-    ret = ratingDict[uid]['mean'] if denominator is 0 else ratingDict[uid]['mean'] + numerator / denominator
+    ret = ratingDict[uid]['mean'] if denominator == 0 else ratingDict[uid]['mean'] + numerator / denominator
     if ret >= 5:
         ret = 5
     elif ret < 1:
