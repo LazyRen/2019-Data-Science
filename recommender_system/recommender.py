@@ -20,18 +20,16 @@ def preprocessData(data):
         maxMID = max(maxMID, int(row[1]))
 
     # [maxUID * maxMID]
-    ratingMatrix = [[None for col in range(maxMID+1)] for row in range(maxUID+1)]
     ratingDict = [dict() for row in range(maxUID+1)]
     for row in data:
         uid = int(row[0]); mid = int(row[1]); rating = int(row[2])
-        ratingMatrix[uid][mid] = rating
         ratingDict[uid][mid] = rating
     for user in range(1, maxUID+1):
         ratingDict[user]['mean'] = sum(ratingDict[user].values()) / len(ratingDict[user])
-    return ratingMatrix, ratingDict
+    return ratingDict
 
 
-def similarityMeasure(ratingMatrix, ratingDict):
+def similarityMeasure(ratingDict):
     maxUID = len(ratingDict)
     similarityMatrix = [[0 for col in range(maxUID)] for row in range(maxUID)]
 
@@ -80,8 +78,7 @@ def predictRating(uid, mid, ratingDict, similarityMeasure, neighbors):
         checked += 1
 
     if denominator is 0:
-        print("denominator is 0")
-        return ret
+        return round(ret)
     ret += numerator / denominator
     if ret >= 5:
         ret = 5
@@ -109,8 +106,8 @@ if __name__ == "__main__":
         sys.exit("argv error")
 
     trainData = loadData(sys.argv[1])
-    ratingMatrix, ratingDict = preprocessData(trainData)
+    ratingDict = preprocessData(trainData)
     del trainData
-    similarityMatrix = similarityMeasure(ratingMatrix, ratingDict)
+    similarityMatrix = similarityMeasure(ratingDict)
     neighbors = findNeighbors(len(ratingDict), similarityMatrix)
     createOutputFile(ratingDict, similarityMatrix, neighbors)
