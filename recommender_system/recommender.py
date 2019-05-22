@@ -7,19 +7,26 @@ import sys
 
 # load data from file.
 def loadData(fileName):
+    """read 'fileName' file & return [[(user_id), (item_id), (rating)] * rows]."""
     with open(fileName, 'r') as openedFile:
         # [user_id] [item_id] [rating] ([time_stamp] deleted)
         return [line.rstrip('\n').split('\t')[:-1] for line in openedFile.readlines()]
 
 
 def preprocessData(data):
+    """Create list of ratingDict from a loaded data
+
+    Argument:
+    data -- [[(user_id), (item_id), (rating)] * rows]
+    Return:
+    ratingDict[user][movie]  -- rating of moive of user (user & movie must be int)
+    ratingDict[user]['mean'] -- mean of user's all rating
+    Time Complexity = O(2r + u) # r = number of rows in data, u = number of users
+    """
     maxUID = -1
-    maxMID = -1
     for row in data:
         maxUID = max(maxUID, int(row[0]))
-        maxMID = max(maxMID, int(row[1]))
 
-    # [maxUID * maxMID]
     ratingDict = [dict() for row in range(maxUID+1)]
     for row in data:
         uid = int(row[0]); mid = int(row[1]); rating = int(row[2])
@@ -30,13 +37,19 @@ def preprocessData(data):
 
 
 def similarityMeasure(ratingDict):
+    """Calculate similarity using PCC & return similarityMatirx in foam of 2D list.
+
+    Time Complexity = O(u^2 * m) # u = number of users, m = number of movies
+    Since m in time complexity refers to commonItem of two user, in most cases function will run in O(u^2).
+    """
     maxUID = len(ratingDict)
     similarityMatrix = [[0 for col in range(maxUID)] for row in range(maxUID)]
 
     # Calculate similarity using 'Pearson Correlation Coefficient'
     for user1 in range(1, maxUID):
-        for user2 in range(user1+1, maxUID):
+        for user2 in range(user1, maxUID):
             commonItem = set(ratingDict[user1].keys()).intersection(ratingDict[user2].keys())
+            commonItem.remove('mean')
             if len(commonItem) is not 0:
                 similarity = numerator = denominator1 = denominator2 = 0
                 for item in commonItem:
@@ -53,6 +66,12 @@ def similarityMeasure(ratingDict):
 
 
 def findNeighbors(maxUID, similarityMatrix):
+    """Find & sort neighbors based on the similarity.
+
+    Return:
+    neighbors -- 2D list containing (uid, similarity).
+                 Each row is sorted in descending order of similarity.
+    """
     neighbors = [[] for row in range(maxUID)]
     for user1 in range(1, maxUID):
         for user2 in range(1, maxUID):
@@ -63,10 +82,17 @@ def findNeighbors(maxUID, similarityMatrix):
 
 
 def predictRating(uid, mid, ratingDict, similarityMeasure, neighbors):
+    """Predict rating of movie(mid) for user(uid) using KNN collaborative filtering.
+
+    Return:
+    predicted value in int(1~5)
+    """
     maxKNN = 50; checked = 0
     numerator = denominator = 0
     ret = ratingDict[uid]['mean']
 
+    # Run KNN collaborative filtering.
+    # Algorithm stops in advance if similarity reaches negative.
     for neighbor in neighbors[uid]:
         user = neighbor[0]; similarity = neighbor[1]
         if ratingDict[user].get(mid) is None:
@@ -77,9 +103,7 @@ def predictRating(uid, mid, ratingDict, similarityMeasure, neighbors):
         denominator += similarity
         checked += 1
 
-    if denominator is 0:
-        return round(ret)
-    ret += numerator / denominator
+    ret = ratingDict[uid]['mean'] if denominator is 0 else ratingDict[uid]['mean'] + numerator / denominator
     if ret >= 5:
         ret = 5
     elif ret < 1:
@@ -89,6 +113,7 @@ def predictRating(uid, mid, ratingDict, similarityMeasure, neighbors):
 
 
 def createOutputFile(ratingDict, similarityMeasure, neighbors):
+    """Predict all rating of <user, movie> pairs from test file and prints to base_prediction."""
     testData = loadData(sys.argv[2])
     outputFile = open(sys.argv[1][:sys.argv[1].find(".base")] + ".base_prediction.txt", 'w')
 
