@@ -25,9 +25,7 @@ class Point:
 
 
 def loadData(fileName):
-    """
-    read 'fileName' and return list of Point objects.
-    """
+    """read 'fileName' and return list of Point objects."""
     with open(fileName, 'r') as openedFile:
         dataList = []
         for line in openedFile.readlines():
@@ -38,8 +36,7 @@ def loadData(fileName):
 
 
 def findNeighbor(cur, dataList, eps):
-    """
-    Find all neighbors from cur pt.
+    """Find all neighbors from cur pt.
     Neighbors must be positioned within radius of 'eps'.
     Time Complexity = O(n)
     """
@@ -51,8 +48,7 @@ def findNeighbor(cur, dataList, eps):
 
 
 def dbscan(dataList, maxClusterNum, eps, minPts):
-    """
-    Iterate all points to classify them as a cluster.
+    """Iterate all points to classify them as a cluster.
     Return value 'labelConverter' is used to convert labels of cluster with small size to -1
     if (# of clusters > maxClusterNum).
     Time Complexity = O(n^2)
@@ -107,8 +103,7 @@ def dbscan(dataList, maxClusterNum, eps, minPts):
 
 
 def createOutputFile(dataList, maxClusterNum, labelConverter, filePrefix):
-    """
-    Create (maxClusterNum) of output files containing pts' id.
+    """Create (maxClusterNum) of output files containing pts' id.
     Each output file represents one cluster.
     If necessary, use labelConverter to reduce number of clusters.
     Time Complexity = O(n)
