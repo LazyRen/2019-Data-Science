@@ -1,6 +1,10 @@
 #!/usr/bin/env python3
 
-from clustering import loadData, dbscan, createOutputFile
+"""
+This file is intended to be used by anyone with own output files & ideal files.
+Change global dir variables properly before use.
+"""
+
 import datetime
 
 inputFileDir  = "data/"
@@ -15,39 +19,12 @@ class Point:
         self.clusteredLabel = -1
 
 
-def runDBSCAN(testName, maxClusterNum, eps, minPts):
-    print("\nStarting DBSCAN: " + testName)
-    dataList = loadData(inputFileDir + testName + ".txt")
-
-    startTime = datetime.datetime.now()
-    labelConverter = dbscan(dataList, maxClusterNum, eps, minPts)
-    elapsedTime = datetime.datetime.now() - startTime
-    print("DBSCAN for " + testName + " took " + str(elapsedTime.total_seconds()) + " seconds")
-
-    startTime = datetime.datetime.now()
-    createOutputFile(dataList, maxClusterNum, labelConverter, outputFileDir + testName)
-    elapsedTime = datetime.datetime.now() - startTime
-    print("creating result files for " + testName + " took " + str(elapsedTime.total_seconds()) + " seconds")
-    print("\n")
-    return len(dataList)
-
-
 def loadClusters(testName, maxClusterNum, suffix):
     clusterList = []
     for i in range(maxClusterNum):
         cluster = [line.rstrip('\n') for line in open(testName + "_cluster_" + str(i) + suffix + ".txt", 'r')]
         clusterList.append(cluster)
     return clusterList
-
-
-def findClusterID(pid, clusterList):
-    for i in range(len(clusterList)):
-        if pid in clusterList[i]:
-            return i
-
-    # point with pid does not exist in clusterList
-    # Meaning point was considered as outlier or belongs to extra(removed) cluster.
-    return -1
 
 
 def runEvaluation(testName, maxClusterNum, totalPts):
@@ -98,17 +75,5 @@ if __name__ == "__main__":
     minPtsList     = [22,       7,        5        ]
     totalPts       = [8000,     2000,     2100     ]
 
-    userInput = -1
-    while(True):
-        print("******************** USAGE *********************")
-        print("1. Use existing outputfiles at " + outputFileDir)
-        print("2. Run DBSCAN to create new outputFiles")
-        userInput = int(input("Input: "))
-        print("\n")
-        if (userInput == 1 or userInput == 2):
-            break
-
     for i in range(len(testNameList)):
-        if (userInput == 2):
-            runDBSCAN(testNameList[i], clusterNumList[i], epsList[i], minPtsList[i])
         runEvaluation(testNameList[i], clusterNumList[i], totalPts[i])
