@@ -36,8 +36,7 @@ def runEvaluation(testName):
             diff[sub] = 1
         else:
             diff[sub] += 1
-        # total += sub ** 2
-        total += abs(sub)
+        total += sub ** 2
 
     RMSE = sqrt(total/tested)
     elapsedTime = datetime.datetime.now() - startTime
