@@ -13,6 +13,7 @@ inputFileDir  = "data/"
 idealFileDir  = "data/"
 outputFileDir = "data/"
 EXECUTABLE_NAME = "recommender.py"
+testNameList   = ["u1", "u2", "u3", "u4", "u5"]
 
 
 def loadData(fileName):
@@ -46,21 +47,20 @@ def runEvaluation(testName):
 
 
 if __name__ == "__main__":
-    testNameList   = ["u1", "u2", "u3", "u4", "u5" ]
     runRecommender = False
-    userInput = input("Run rocommder program? (Y/N): ")
+    userInput = input("Run recommender program? (Y/N): ")
     if (userInput == 'Y' or userInput == 'y'):
         runRecommender = True
-    for i in range(len(testNameList)):
+    for testName in testNameList:
         if runRecommender:
-            print("Running {} Test".format(testNameList[i]))
+            print("Running {} Prediction".format(testName))
             startTime = datetime.datetime.now()
             p = subprocess.Popen(["./"+EXECUTABLE_NAME,
-                                  inputFileDir+testNameList[i]+".base",
-                                  idealFileDir+testNameList[i]+".test"],
+                                  inputFileDir+testName+".base",
+                                  idealFileDir+testName+".test"],
                                  stdin=subprocess.PIPE,
                                  stdout=subprocess.PIPE)
             p.wait()
             elapsedTime = datetime.datetime.now() - startTime
-            print("Prediction took " + str(elapsedTime.total_seconds()) + " seconds\n")
-        runEvaluation(testNameList[i])
+            print("Prediction took " + str(elapsedTime.total_seconds()) + " seconds")
+        runEvaluation(testName)
