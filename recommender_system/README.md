@@ -1,6 +1,6 @@
 # Recommender System
 
-[![GitHub issue author](https://img.shields.io/badge/author-Dae%20In%20Lee-blue.svg)](https://github.com/lazyren)
+[![GitHub issue author](https://img.shields.io/badge/author-DaeIn%20Lee-blue.svg)](https://github.com/lazyren)
 
 
 
@@ -81,7 +81,7 @@ ratingDict[user]['mean'] # mean of user's all rating
 
 ### similarityMeasure()
 
-![simil](./assets/simil.svg)
+![simil](./assets/simil.png)
 
 Calcurate similarity using *Pearson Correlation Coefficient*.<br>Function only needs `ratingDict` created by `preprocessData()`.
 
