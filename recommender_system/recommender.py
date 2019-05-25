@@ -136,6 +136,5 @@ if __name__ == "__main__":
     ratingDict = preprocessData(trainData)
     del trainData
     similarityMatrix = similarityMeasure(ratingDict)
-    fillMissingRating(ratingDict)
     neighbors = findNeighbors(len(ratingDict), similarityMatrix)
     createOutputFile(ratingDict, similarityMatrix, neighbors)
