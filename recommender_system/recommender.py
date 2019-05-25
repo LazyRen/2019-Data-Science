@@ -10,7 +10,7 @@ def loadData(fileName):
     """read 'fileName' file & return [[(user_id), (item_id), (rating)] * rows]."""
     with open(fileName, 'r') as openedFile:
         # [user_id] [item_id] [rating] ([time_stamp] deleted)
-        return [line.rstrip('\n').split('\t')[:-1] for line in openedFile.readlines()]
+        return [[int(x) for x in line.rstrip('\n').split('\t')[:-1]] for line in openedFile.readlines()]
 
 
 def preprocessData(data):
@@ -25,11 +25,11 @@ def preprocessData(data):
     """
     maxUID = -1
     for row in data:
-        maxUID = max(maxUID, int(row[0]))
+        maxUID = max(maxUID, row[0])
 
     ratingDict = [dict() for row in range(maxUID+1)]
     for row in data:
-        uid = int(row[0]); mid = int(row[1]); rating = int(row[2])
+        uid = row[0]; mid = row[1]; rating = row[2]
         ratingDict[uid][mid] = rating
     for user in range(1, maxUID+1):
         ratingDict[user]['mean'] = sum(ratingDict[user].values()) / len(ratingDict[user])
@@ -120,7 +120,7 @@ def createOutputFile(ratingDict, similarityMeasure, neighbors):
     outputFile = open(sys.argv[1][:sys.argv[1].find(".base")] + ".base_prediction.txt", 'w')
 
     for row in testData:
-        uid = int(row[0]); mid = int(row[1])
+        uid = row[0]; mid = row[1]
         predict = predictRating(uid, mid, ratingDict, similarityMeasure, neighbors)
         outputFile.write('{}\t{}\t{}\n'.format(uid, mid, predict))
 
@@ -136,5 +136,6 @@ if __name__ == "__main__":
     ratingDict = preprocessData(trainData)
     del trainData
     similarityMatrix = similarityMeasure(ratingDict)
+    fillMissingRating(ratingDict)
     neighbors = findNeighbors(len(ratingDict), similarityMatrix)
     createOutputFile(ratingDict, similarityMatrix, neighbors)
