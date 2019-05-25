@@ -77,6 +77,10 @@ Note that output files will be located on the same folder as input file. (in dat
 
 ![score](./score.png)
 
+
+
+I've done **reclustering** for the points in extra cluster to see if there is any improvements.<br>As you can see from below result, it slightly improves input2's score but for some reason decreases input1's score. So I just commented out the `recluster()` function in `dbscan()`. If you want to see it for yourself, uncomment `recluster()` at *line 131*.![recluster](./assets/recluster.png)
+
 ## Implementation
 
 ### class Point

@@ -47,6 +47,32 @@ def findNeighbor(cur, dataList, eps):
     return neighbors
 
 
+def recluster(dataList, labelConverter, clusterSeedList, eps, minPts):
+    for pt in dataList:
+        pt.isVisited = False
+
+    for seed in clusterSeedList:
+        if labelConverter[seed.label] == -1:
+            continue
+        seed.isVisited = True
+        neighborhood = findNeighbor(seed, dataList, eps)
+        neighborhood = [x for x in neighborhood
+                        if (x.label != -1 and labelConverter[x.label] == -1) or x.label == seed.label]
+        idx = -1
+        while (idx < len(neighborhood) - 1):
+            idx += 1
+            if (neighborhood[idx].isVisited):
+                continue
+            neighborhood[idx].isVisited = True
+            nextNeighbor = findNeighbor(neighborhood[idx], dataList, eps)
+            nextNeighbor = [x for x in nextNeighbor
+                            if (x.label != -1 and labelConverter[x.label] == -1) or x.label == seed.label]
+            neighborhood = neighborhood + [x for x in nextNeighbor if x not in neighborhood]
+            if (labelConverter[neighborhood[idx].label] == -1):
+                # print(str(neighborhood[idx].id) + " changed to " + str(seed.label))
+                neighborhood[idx].label = seed.label
+
+
 def dbscan(dataList, maxClusterNum, eps, minPts):
     """Iterate all points to classify them as a cluster.
     Return value 'labelConverter' is used to convert labels of cluster with small size to -1
@@ -56,6 +82,7 @@ def dbscan(dataList, maxClusterNum, eps, minPts):
     """
     unvisitedPt = list(dataList)
     clusterSizeList = []
+    clusterSeedList = []
     lastClusterID = 0
     # lookup all unvisited Points
     while (len(unvisitedPt) != 0):
@@ -68,6 +95,7 @@ def dbscan(dataList, maxClusterNum, eps, minPts):
         neighborhood = findNeighbor(cur, dataList, eps)
         if (len(neighborhood) >= minPts):
             cur.label = lastClusterID
+            clusterSeedList.append(cur)
             clusterSize = 1
             idx = -1
             # find all density-connected points(neighborhood)
@@ -99,6 +127,7 @@ def dbscan(dataList, maxClusterNum, eps, minPts):
             labelConverter[clusterSizeList[i][0]] = i
         for i in range(maxClusterNum, lastClusterID):
             labelConverter[clusterSizeList[i][0]] = -1
+        # recluster(dataList, labelConverter, clusterSeedList, eps, minPts)
     return labelConverter
 
 
