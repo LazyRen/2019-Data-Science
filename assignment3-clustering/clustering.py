@@ -48,14 +48,22 @@ def findNeighbor(cur, dataList, eps):
 
 
 def recluster(dataList, labelConverter, clusterSeedList, eps, minPts):
+    """Recluster points that has been set as extra cluster.
+    Note that not all points in extra cluster will be reclustered.
+    Point must be positioned within neighborhood of existing cluster.
+    """
+    # print("starting reclustering")
     for pt in dataList:
         pt.isVisited = False
 
+    # Expand existing clusters from the seed pt.
     for seed in clusterSeedList:
         if labelConverter[seed.label] == -1:
             continue
         seed.isVisited = True
         neighborhood = findNeighbor(seed, dataList, eps)
+        # Cluster is expanded iff neighbor's label is same as seed's label,
+        # or label is extra cluster.(x.label != -1 and labelConverter[x.label] == -1)
         neighborhood = [x for x in neighborhood
                         if (x.label != -1 and labelConverter[x.label] == -1) or x.label == seed.label]
         idx = -1
@@ -67,7 +75,8 @@ def recluster(dataList, labelConverter, clusterSeedList, eps, minPts):
             nextNeighbor = findNeighbor(neighborhood[idx], dataList, eps)
             nextNeighbor = [x for x in nextNeighbor
                             if (x.label != -1 and labelConverter[x.label] == -1) or x.label == seed.label]
-            neighborhood = neighborhood + [x for x in nextNeighbor if x not in neighborhood]
+            neighborhood = neighborhood \
+                + [x for x in nextNeighbor if x not in neighborhood and not x.isVisited]
             if (labelConverter[neighborhood[idx].label] == -1):
                 # print(str(neighborhood[idx].id) + " changed to " + str(seed.label))
                 neighborhood[idx].label = seed.label
@@ -108,7 +117,8 @@ def dbscan(dataList, maxClusterNum, eps, minPts):
                 nextNeighbor = findNeighbor(neighborhood[idx], dataList, eps)
                 if (len(nextNeighbor) >= minPts):
                     # extend neighborhood without duplicate
-                    neighborhood = neighborhood + [x for x in nextNeighbor if x not in neighborhood]
+                    neighborhood = neighborhood \
+                        + [x for x in nextNeighbor if x not in neighborhood and not x.isVisited]
                 if (neighborhood[idx].label == -1):
                     neighborhood[idx].label = lastClusterID
                     clusterSize += 1
